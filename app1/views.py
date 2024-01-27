@@ -25,9 +25,36 @@ from django.shortcuts import render, redirect
 from django.views.generic.edit import FormView
 from .forms import LoginForm
 from django.contrib import messages
-
+from django.db.models import Q
+from django.core.paginator import Paginator
 from app1.models import Author,Book
 from app1.forms import AuthorForm,BookForm
+
+
+
+
+def signin_required(fn):
+    def wrapper(request,*args,**kwargs):
+        if not request.user.is_authenticated:
+            messages.error(request,"invalid session")
+            return redirect("signin")
+        else:
+            return fn(request,*args,**kwargs)
+    return wrapper
+
+
+def is_admin(fn):
+    def wrapper(request,*args,**kwargs):
+        if not request.user.is_superuser:
+            messages.error(request,"permission denied for current user!!")
+            return redirect("signin")
+        else:
+            return fn(request,*args,**kwargs)
+    return wrapper
+
+
+decs=[signin_required,is_admin]
+
 
 class SignInView(SuccessMessageMixin, FormView):
     template_name = "login.html"
@@ -45,7 +72,7 @@ class SignInView(SuccessMessageMixin, FormView):
             if user and user.is_superuser:
                 login(request, user)
                 messages.success(request, self.success_message)
-                return redirect("index")
+                return redirect("author-add")
             else:
                 messages.error(request, "Invalid credentials or you are not a superuser.")
                 return render(request, self.template_name, {"form": form})
@@ -55,28 +82,33 @@ class SignInView(SuccessMessageMixin, FormView):
 
 
 class IndexView(TemplateView):
-    template_name="index.html"
+    template_name="base.html"
 
-
+@method_decorator(decs,name="dispatch")
 class AuthorAddView(CreateView,ListView):
     model=Author
     form_class=AuthorForm
     template_name="addauthor.html"
     success_url=reverse_lazy("author-add")
     context_object_name="authors"
+    # paginate_by = 3
 
     def form_valid(self, form):
-        messages.success(self.request,"category added successfully")
+        messages.success(self.request,"author added successfully")
         return super().form_valid(form)
     
     def form_invalid(self, form):
-        messages.error(self.request,"category adding failed")
+        messages.error(self.request,"author adding failed")
         return redirect("author-add")
 
     def get_queryset(self):
-        return Author.objects.filter(status=False)
+        query = self.request.GET.get('q')
+        if query:
+            return Author.objects.filter(Q(author_name__icontains=query))
+        return Author.objects.all()
+        # return Author.objects.filter(status=False)
     
-
+@method_decorator(decs,name="dispatch")
 class BookAddView(CreateView,ListView):
     model=Book
     form_class=BookForm
@@ -85,12 +117,22 @@ class BookAddView(CreateView,ListView):
     context_object_name="books"
 
     def form_valid(self, form):
-        messages.success(self.request,"category added successfully")
+        messages.success(self.request,"book added successfully")
         return super().form_valid(form)
     
     def form_invalid(self, form):
-        messages.error(self.request,"category adding failed")
+        messages.error(self.request,"book adding failed")
         return redirect("book-add")
 
     def get_queryset(self):
-        return Book.objects.filter(status=False)
+        query = self.request.GET.get('r')
+        if query:
+            return Book.objects.filter(Q(book_name__icontains=query))
+        return Book.objects.all()
+        # return Book.objects.filter(status=False)
+
+@signin_required
+@is_admin
+def sign_out_view(request,*args,**kwargs):
+    logout(request)
+    return redirect("signin")
