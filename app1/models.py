@@ -14,11 +14,12 @@ class Author(models.Model):
         return self.author_name
 
 class Book(models.Model):
-    title = models.CharField(max_length=100)
-    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='books')
-    created_date = models.DateField()
+    book_name = models.CharField(max_length=100)
+    book_id=models.CharField(max_length=100,null=True)
+    author_name = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='books')
+    created_date = models.DateField(auto_now_add=True,null=True)
     status=models.BooleanField(default=True)
     # Add other Book fields as needed
 
     def __str__(self):
-        return self.title
+        return self.book_name
