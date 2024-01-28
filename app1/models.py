@@ -14,15 +14,14 @@ class Author(models.Model):
         return self.author_name
     
     @property
-    def total_author_books(self):
+    def total_authors(self):
         num_authors = Author.objects.count()
-        num_books = Book.objects.count()
-        return num_authors, num_books
+        return num_authors
     
-if __name__ == "__main__":
-    num_authors, num_books = total_author_books()
-    print(f"Number of Authors: {num_authors}")
-    print(f"Number of Books: {num_books}")
+# if __name__ == "__main__":
+#     num_authors, num_books = total_author_books()
+#     print(f"Number of Authors: {num_authors}")
+#     print(f"Number of Books: {num_books}")
 
 
 
@@ -38,3 +37,9 @@ class Book(models.Model):
 
     def __str__(self):
         return self.book_name
+    
+    @property
+    def total_books(self):
+        num_books = Book.objects.count()
+        return num_books
+    
