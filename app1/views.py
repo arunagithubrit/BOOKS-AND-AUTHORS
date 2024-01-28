@@ -1,4 +1,6 @@
 
+from typing import Any
+from django.db.models.query import QuerySet
 from django.shortcuts import render,redirect
 from django.views.generic import CreateView,FormView,ListView,UpdateView,DetailView,TemplateView
 from django.urls import reverse_lazy,reverse
@@ -91,7 +93,8 @@ class AuthorAddView(CreateView,ListView):
     template_name="addauthor.html"
     success_url=reverse_lazy("author-add")
     context_object_name="authors"
-    # paginate_by = 3
+    paginate_by=3
+    
 
     def form_valid(self, form):
         messages.success(self.request,"author added successfully")
@@ -108,6 +111,19 @@ class AuthorAddView(CreateView,ListView):
         return Author.objects.all()
         # return Author.objects.filter(status=False)
     
+    def listing(request):
+        author_list = Author.objects.all()
+        paginator = Paginator(author_list, 3)  # Show 25 contacts per page.
+
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+        context={
+            "page_obj": page_obj
+            }
+            
+        
+        return render(request, "addauthor.html",context)
+    
 @method_decorator(decs,name="dispatch")
 class BookAddView(CreateView,ListView):
     model=Book
@@ -115,6 +131,7 @@ class BookAddView(CreateView,ListView):
     template_name="addbook.html"
     success_url=reverse_lazy("book-add")
     context_object_name="books"
+    paginate_by=3
 
     def form_valid(self, form):
         messages.success(self.request,"book added successfully")
@@ -130,9 +147,39 @@ class BookAddView(CreateView,ListView):
             return Book.objects.filter(Q(book_name__icontains=query))
         return Book.objects.all()
         # return Book.objects.filter(status=False)
+    
+    def listing(request):
+        book_list = Author.objects.all()
+        paginator = Paginator(book_list, 3)  # Show 25 contacts per page.
+
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+        context={
+            "page_obj": page_obj
+            }
+            
+        
+        return render(request, "addbook.html",context)
+    
+
+class AuthorDetailView(DetailView):
+    template_name="authordetail.html"
+    model=Author
+    context_object_name="author"
+
+    def get_context_data(self, **kwargs: Any):
+        context= super().get_context_data(**kwargs)
+        author= self.get_object()
+        context['books'] = author.books.all()
+        return context
+       
+       
 
 @signin_required
 @is_admin
 def sign_out_view(request,*args,**kwargs):
     logout(request)
     return redirect("signin")
+
+
+

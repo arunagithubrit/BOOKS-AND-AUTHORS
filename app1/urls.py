@@ -1,5 +1,5 @@
 from django.urls import path
-from app1.views import SignInView,IndexView,AuthorAddView,BookAddView,sign_out_view
+from app1.views import SignInView,IndexView,AuthorAddView,BookAddView,sign_out_view,AuthorDetailView
 
 
 urlpatterns=[
@@ -8,6 +8,7 @@ urlpatterns=[
      path("index/",IndexView.as_view(),name="index"),
      path("author/add/",AuthorAddView.as_view(),name="author-add"),
      path("book/add/",BookAddView.as_view(),name="book-add"),
+     path("author/<int:pk>/books/",AuthorDetailView.as_view(),name="author-detail"),
      path("logout/",sign_out_view,name="logout"),
 
 
