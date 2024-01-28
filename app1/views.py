@@ -182,4 +182,12 @@ def sign_out_view(request,*args,**kwargs):
     return redirect("signin")
 
 
+def total_authors(self,request):
+        num_authors = Author.objects.count()
+        return render(request,"addauthor.html" ,{'num_authors': num_authors})
 
+def total_books(self,request):
+        num_books = Book.objects.count()
+        return render(request,"addbook.html", {'num_books': num_books})
+
+    

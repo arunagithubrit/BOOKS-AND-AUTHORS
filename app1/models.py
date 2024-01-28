@@ -8,7 +8,7 @@ class Author(models.Model):
     
     email = models.EmailField(unique=True)
     status=models.BooleanField(default=True)
-    # Add other Author fields as needed
+   
 
     def __str__(self):
         return self.author_name
